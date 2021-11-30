@@ -99,7 +99,7 @@ add_definitions(-D ARM_INTRINSICS)
 #add_executable(talker src/video/no_encryption/talker_2.cpp)
 
 ## video compression + AES encryption
-#add_executable(talker src/video/video_compression_encryption/aes_cfb/talker.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
+add_executable(talker src/video/video_compression_encryption/aes_cfb/talker.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
 
 
 
@@ -133,7 +133,7 @@ add_definitions(-D ARM_INTRINSICS)
 ### COMPRESSION + AUTHENTICATED ENCRYPTION ##
 
 # AEGIS + compression video
-add_executable(talker src/video/video_compression_encryption/AEGIS/talker.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
+#add_executable(talker src/video/video_compression_encryption/AEGIS/talker.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
 
 
 ##target_link_libraries(talker ${catkin_LIBRARIES})
@@ -144,7 +144,7 @@ target_link_libraries(talker
   ${OpenCV_LIBS}
 )
 
-add_dependencies(talker crypto_pipeline_generate_messages_cpp)
+#add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
 ### ENCRYPTION ###
 
@@ -195,7 +195,7 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 #add_executable(listener src/video/no_encryption/listener_2.cpp)
 
 ## video compression + AES encryption
-#add_executable(listener src/video/video_compression_encryption/aes_cfb/listener.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
+add_executable(listener src/video/video_compression_encryption/aes_cfb/listener.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
 
 
 
@@ -231,7 +231,7 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 ### COMPRESSION + AUTHENTICATED ENCRYPTION ###
 
 # AEGIS + compression video
-add_executable(listener src/video/video_compression_encryption/AEGIS/listener.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
+#add_executable(listener src/video/video_compression_encryption/AEGIS/listener.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
 
 
 
@@ -243,5 +243,4 @@ target_link_libraries(listener
   ${OpenCV_LIBS}
 )
 
-add_dependencies(listener crypto_pipeline_generate_messages_cpp)
-
+#add_dependencies(listener crypto_pipeline_generate_messages_cpp)

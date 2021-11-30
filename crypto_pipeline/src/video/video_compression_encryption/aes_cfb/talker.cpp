@@ -24,6 +24,7 @@
 
 
 #define BLOCKSIZE 16
+#define CV_IMWRITE_JPEG_QUALITY 95
 
 
 // measure delay
@@ -40,6 +41,8 @@ std::vector<int> compression_params;
 
 // create containers for the compressed data 
 sensor_msgs::CompressedImage talker_msg_compressed;
+
+bool is_new = true;
 
 
 
@@ -63,7 +66,7 @@ void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
   //compression_params.push_back(3); // level 0 - 9 - tradeoff between file size and compression latency (the higher the latency, the lower the size)
   // JPEG
   compression_params.push_back(CV_IMWRITE_JPEG_QUALITY); 
-  compression_params.push_back(95); // 0-100
+  //compression_params.push_back(95); // 0-100
 
   // store compressed opencv image to outbut buffer (ros topic)
   //cv::imencode(".png", cv_ptr->image, talker_msg_compressed.data, compression_params);
@@ -74,6 +77,8 @@ void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
   std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
   log_time_delay1 << elapsed_seconds1.count() << std::endl;
   //std::cout << "compression latency: " << elapsed_seconds1.count() << std::endl;
+
+  is_new = true;
 
 }
 
@@ -95,42 +100,48 @@ int main(int argc, char **argv)
 
   //ros::Rate loop_rate(100);
 
-  u8 key[BLOCKSIZE] = {0};
-  u32 iv[BLOCKSIZE/4] = {0};
+  u8 key[BLOCKSIZE] = {0x9b, 0x11, 0x74, 0x89, 0xcd, 0x32, 0x69,0x20,
+                      0xce, 0xe5, 0x55, 0x0b, 0x81, 0x6d, 0xa2, 0x85};
+  u32 iv[BLOCKSIZE/4] = {0x00000001, 0x00000001, 0x00000001, 0x00000001};
   cipher_state e_cs;
 
   while (ros::ok())
   {
 
-    // ** PART 1:  listen for ROS messages from rosbag. Then compress, encrypt and send to listener node
+    if(is_new)
+    {
+      // ** PART 1:  listen for ROS messages from rosbag. Then compress, encrypt and send to listener node
 
-    start2 = std::chrono::system_clock::now();
+      start2 = std::chrono::system_clock::now();
 
-    sensor_msgs::CompressedImage talker_msg_compressed_copy;
-    talker_msg_compressed_copy = talker_msg_compressed;
+      sensor_msgs::CompressedImage talker_msg_compressed_copy;
+      talker_msg_compressed_copy = talker_msg_compressed;
     
 
-    // define data size
-    int size = talker_msg_compressed.data.size();
+      // define data size
+      int size = talker_msg_compressed.data.size();
 
     
-    if(size > 0){
+      if(size > 0){
 
-      // %%%% INITIALIZE CIPHER AND ENCRYPT %%%%
+        // %%%% INITIALIZE CIPHER AND ENCRYPT %%%%
 
-      cfb_initialize_cipher(&e_cs, key, iv);
-      cfb_process_packet(&e_cs, &talker_msg_compressed.data[0], &talker_msg_compressed_copy.data[0], size, ENCRYPT);
+        cfb_initialize_cipher(&e_cs, key, iv);
+        cfb_process_packet(&e_cs, &talker_msg_compressed.data[0], &talker_msg_compressed_copy.data[0], size, ENCRYPT);
 
-      // measure elapsed time - encryption
-      end2 = std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-      log_time_delay2 << elapsed_seconds2.count() << std::endl;
-      //std::cout << "encryption latency: " << elapsed_seconds2.count() << std::endl;
+        // measure elapsed time - encryption
+        end2 = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+        log_time_delay2 << elapsed_seconds2.count() << std::endl;
+        //std::cout << "encryption latency: " << elapsed_seconds2.count() << std::endl;
 
-      // publish compressed and encrypted image
-      imagePublisher.publish(talker_msg_compressed_copy);
+        // publish compressed and encrypted image
+        imagePublisher.publish(talker_msg_compressed_copy);
 
+        is_new = false;
+      }
     }
+    
     
     //loop_rate.sleep();
     ros::spinOnce();

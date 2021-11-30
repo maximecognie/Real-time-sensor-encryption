@@ -37,10 +37,13 @@ std::ofstream log_time_delay2(path_log2);
 // Create a container for the data received from talker
 sensor_msgs::CompressedImage listener_msg;
 
+bool is_new = true;
+
 
 void cameraCallback(const sensor_msgs::CompressedImageConstPtr& msg){
   
   listener_msg = *msg;
+  is_new = true;
   
 }
 
@@ -60,61 +63,66 @@ int main(int argc, char **argv)
 
   //ros::Rate loop_rate(100);
 
-  u8 key[BLOCKSIZE] = {0};
-  u32 iv[BLOCKSIZE/4] = {0};
+  u8 key[BLOCKSIZE] = {0x9b, 0x11, 0x74, 0x89, 0xcd, 0x32, 0x69,0x20,
+                      0xce, 0xe5, 0x55, 0x0b, 0x81, 0x6d, 0xa2, 0x85};
+  u32 iv[BLOCKSIZE/4] = {0x00000001, 0x00000001, 0x00000001, 0x00000001};
   cipher_state d_cs;
 
   while (ros::ok()){
 
-    // ** PART 2: listen for received ROS messages from talker node **
-
-    // start time - decryption
-    start1 = std::chrono::system_clock::now();
-    
-    // copy incomming message 
-    sensor_msgs::CompressedImage listener_msg_copy;
-    listener_msg_copy = listener_msg; 
-
-
-    // define data size
-    int size = listener_msg.data.size();
-    
-    if(size > 0){
-
-      // %%%% INITIALIZE CIPHER AND DECRYPT %%%%
-
-	    cfb_initialize_cipher(&d_cs, key, iv);
-	    cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size, DECRYPT);
-
-      // measure elapsed time - decryption
-      end1 = std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-      log_time_delay1 << elapsed_seconds1.count() << std::endl;
-      //std::cout << "decryption latency: " << elapsed_seconds1.count() << std::endl;
-        
-
-      // %%%% DECOMPRESSION %%%%
+    if(is_new)
+    {
+      // ** PART 2: listen for received ROS messages from talker node **
 
       // start time - decryption
-      start2 = std::chrono::system_clock::now();
+      start1 = std::chrono::system_clock::now();
+    
+      // copy incomming message 
+      sensor_msgs::CompressedImage listener_msg_copy;
+      listener_msg_copy = listener_msg; 
 
-      cv::Mat decoded_image = cv::imdecode(cv::Mat(listener_msg_copy.data), 0); 
 
-      // convert opencv image to ROS
-      cv_bridge::CvImage out_msg;
-      out_msg.header = listener_msg_copy.header; 
-      out_msg.encoding = sensor_msgs::image_encodings::MONO8; 
-      out_msg.image = decoded_image; 
+      // define data size
+      int size = listener_msg.data.size();
+    
+      if(size > 0){
 
-      // measure elapsed time - decompression
-      end2 = std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-      log_time_delay2 << elapsed_seconds2.count() << std::endl;
-      //std::cout << "decompression latency: " << elapsed_seconds2.count() << std::endl;
+        // %%%% INITIALIZE CIPHER AND DECRYPT %%%%
+
+	      cfb_initialize_cipher(&d_cs, key, iv);
+	      cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size, DECRYPT);
+
+        // measure elapsed time - decryption
+        end1 = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+        log_time_delay1 << elapsed_seconds1.count() << std::endl;
+        //std::cout << "decryption latency: " << elapsed_seconds1.count() << std::endl;
+        
+
+        // %%%% DECOMPRESSION %%%%
+
+        // start time - decryption
+        start2 = std::chrono::system_clock::now();
+
+        cv::Mat decoded_image = cv::imdecode(cv::Mat(listener_msg_copy.data), 0); 
+
+        // convert opencv image to ROS
+        cv_bridge::CvImage out_msg;
+        out_msg.header = listener_msg_copy.header; 
+        out_msg.encoding = sensor_msgs::image_encodings::MONO8; 
+        out_msg.image = decoded_image; 
+
+        // measure elapsed time - decompression
+        end2 = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+        log_time_delay2 << elapsed_seconds2.count() << std::endl;
+        //std::cout << "decompression latency: " << elapsed_seconds2.count() << std::endl;
       
-      // publish decrypted and decompressed image
-      imagePublisher.publish(out_msg.toImageMsg());   
+        // publish decrypted and decompressed image
+        imagePublisher.publish(out_msg.toImageMsg());   
 
+        is_new = false;
+      }
     }
     
     //loop_rate.sleep();
