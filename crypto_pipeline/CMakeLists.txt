@@ -25,8 +25,6 @@ find_package(catkin REQUIRED
 ## Declare a catkin package
 ## catkin_package()
 catkin_package(
-  INCLUDE_DIRS
-    include
   LIBRARIES
     ${PROJECT_NAME}_lib
   CATKIN_DEPENDS
