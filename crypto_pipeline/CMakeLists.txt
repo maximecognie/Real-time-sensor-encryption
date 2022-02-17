@@ -41,8 +41,8 @@ catkin_package(
 
 ### for ARM - HW acceleration ###
 
-add_compile_options(-march=armv8-a+crypto)
-add_definitions(-D ARM_INTRINSICS)
+#add_compile_options(-march=armv8-a+crypto)
+#add_definitions(-D ARM_INTRINSICS)
 
 
 
