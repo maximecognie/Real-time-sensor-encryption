@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "crypto_pipeline/src/video/video_compression_encryption/aes_cfb/aes_cfb.h"
+#include "./crypto_pipeline/src/video/video_compression_encryption/aes_cfb/aes_cfb.h"
 #include <string>
 
 #define ROUND_REDUCED 0
