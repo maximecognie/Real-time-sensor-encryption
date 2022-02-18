@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "${catkin_ws}   /src/video/video_compression_encryption/aes_cfb/aes_cfb.h"
+#include "${catkin_ws}/src/video/video_compression_encryption/aes_cfb/aes_cfb.h"
 #include <string>
 
 #define ROUND_REDUCED 0
