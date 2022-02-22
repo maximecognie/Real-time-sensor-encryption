@@ -1,5 +1,5 @@
 // ROS libraries
-#include "/ros/ros.h"
+#include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
