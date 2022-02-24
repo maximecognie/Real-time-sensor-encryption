@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         // convert opencv image to ROS
         cv_bridge::CvImage out_msg;
         out_msg.header = listener_msg_copy.header; 
-        out_msg.encoding = sensor_msgs::image_encodings::MONO8; 
+        out_msg.encoding = sensor_msgs::image_encodings::BGR8; 
         out_msg.image = decoded_image; 
 
         // measure elapsed time - decompression
